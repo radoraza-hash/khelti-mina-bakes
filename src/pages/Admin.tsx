@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Session } from "@supabase/supabase-js";
 
 interface Order {
   id: string;
@@ -27,38 +28,66 @@ interface OrderItem {
 
 const Admin = () => {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [username, setUsername] = useState("");
+  const [session, setSession] = useState<Session | null>(null);
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<Record<string, OrderItem[]>>({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      loadOrders();
-    }
-  }, [isAuthenticated]);
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+      if (session) {
+        loadOrders();
+      }
+    });
 
-  const handleLogin = (e: React.FormEvent) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        loadOrders();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === "Rado" && password === "Raza") {
-      setIsAuthenticated(true);
-      toast.success("Connexion réussie !");
-    } else {
-      toast.error("Identifiants incorrects");
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      toast.error(`Erreur de connexion: ${error.message}`);
+      setLoading(false);
+      return;
     }
+
+    if (data.session) {
+      setSession(data.session);
+      toast.success("Connexion réussie !");
+      await loadOrders();
+    }
+    setLoading(false);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    navigate("/");
   };
 
   const loadOrders = async () => {
     setLoading(true);
     try {
-      const { data: session } = await supabase.auth.getSession();
-      
-      if (!session.session) {
-        await supabase.auth.signInAnonymously();
-      }
-
       const { data: ordersData, error: ordersError } = await supabase
         .from("orders")
         .select("*")
@@ -110,7 +139,17 @@ const Admin = () => {
     }
   };
 
-  if (!isAuthenticated) {
+  if (loading && !session) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-lg">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-card border-border">
@@ -120,13 +159,15 @@ const Admin = () => {
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="username">Utilisateur</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
-                  id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Nom d'utilisateur"
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="rado.raza@gmail.com"
                   className="bg-background"
+                  required
                 />
               </div>
               <div className="space-y-2">
@@ -138,10 +179,11 @@ const Admin = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Mot de passe"
                   className="bg-background"
+                  required
                 />
               </div>
-              <Button type="submit" className="w-full">
-                Se connecter
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Connexion..." : "Se connecter"}
               </Button>
               <Button
                 type="button"
@@ -246,7 +288,10 @@ const Admin = () => {
               {loading ? "Chargement..." : "Actualiser"}
             </Button>
             <Button variant="outline" onClick={() => navigate("/")}>
-              Retour à l'accueil
+              Revenir en utilisateur
+            </Button>
+            <Button variant="destructive" onClick={handleLogout}>
+              Déconnexion
             </Button>
           </div>
         </div>

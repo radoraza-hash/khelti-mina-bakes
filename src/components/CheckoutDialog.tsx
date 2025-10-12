@@ -83,25 +83,29 @@ export const CheckoutDialog = ({
 
       if (itemsError) throw itemsError;
 
-      // Send email notification
-      await supabase.functions.invoke("send-order-email", {
+      // Send email confirmation
+      const { error: emailError } = await supabase.functions.invoke("send-order-confirmation", {
         body: {
-          customerName: formData.name,
-          phone: formData.phone,
-          email: formData.email || undefined,
+          customer_name: formData.name,
+          customer_email: formData.email || "non-fourni@email.com",
           items: items.map((item) => ({
             productName: item.name,
             options: item.options,
             quantity: item.quantity,
             totalPrice: item.price,
           })),
-          totalPrice: total,
+          total_amount: total,
         },
       });
 
-      toast.success(
-        `Commande enregistrée ! Vous serez informé sur ${formData.phone} par SMS avec la date pour récupérer la commande.`
-      );
+      if (emailError) {
+        console.error("Error sending confirmation email:", emailError);
+        toast.error("Commande enregistrée mais l'email de confirmation n'a pas pu être envoyé");
+      } else {
+        toast.success(
+          `Commande enregistrée ! Vous serez informé sur ${formData.phone} par SMS avec la date pour récupérer la commande.`
+        );
+      }
 
       setFormData({ name: "", phone: "", email: "" });
       onSuccess();
