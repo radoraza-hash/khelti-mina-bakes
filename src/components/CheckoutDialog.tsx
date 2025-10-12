@@ -53,23 +53,24 @@ export const CheckoutDialog = ({
 
     try {
       // Create order
-      const { data: order, error: orderError } = await supabase
+      const orderId = crypto.randomUUID();
+
+      const { error: orderError } = await supabase
         .from("orders")
         .insert({
+          id: orderId,
           customer_name: formData.name,
           phone: formData.phone,
           email: formData.email || null,
           total_price: total,
           status: "pending",
-        })
-        .select()
-        .single();
+        });
 
       if (orderError) throw orderError;
 
       // Create order items
       const orderItems = items.map((item) => ({
-        order_id: order.id,
+        order_id: orderId,
         product_name: item.name,
         options: item.options,
         quantity: item.quantity,
