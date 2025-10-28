@@ -34,6 +34,7 @@ const Admin = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [orderItems, setOrderItems] = useState<Record<string, OrderItem[]>>({});
   const [loading, setLoading] = useState(true);
+  const [isSignup, setIsSignup] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -75,6 +76,32 @@ const Admin = () => {
       setSession(data.session);
       toast.success("Connexion réussie !");
       await loadOrders();
+    }
+    setLoading(false);
+  };
+
+  const handleSignup = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/admin`,
+      },
+    });
+
+    if (error) {
+      toast.error(`Erreur d'inscription: ${error.message}`);
+      setLoading(false);
+      return;
+    }
+
+    if (data.user) {
+      toast.success("Inscription réussie ! Veuillez vous connecter.");
+      setIsSignup(false);
+      setPassword("");
     }
     setLoading(false);
   };
@@ -154,10 +181,12 @@ const Admin = () => {
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <Card className="w-full max-w-md bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-center">Connexion Admin</CardTitle>
+            <CardTitle className="text-center">
+              {isSignup ? "Inscription Admin" : "Connexion Admin"}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+            <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -183,7 +212,15 @@ const Admin = () => {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "Connexion..." : "Se connecter"}
+                {loading ? (isSignup ? "Inscription..." : "Connexion...") : (isSignup ? "S'inscrire" : "Se connecter")}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setIsSignup(!isSignup)}
+              >
+                {isSignup ? "Déjà un compte ? Se connecter" : "Pas de compte ? S'inscrire"}
               </Button>
               <Button
                 type="button"
