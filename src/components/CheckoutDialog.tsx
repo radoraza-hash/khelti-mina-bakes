@@ -84,30 +84,34 @@ export const CheckoutDialog = ({
 
       if (itemsError) throw itemsError;
 
-      // Send email confirmation
-      const { error: emailError } = await supabase.functions.invoke("send-order-email", {
-        body: {
-          customerName: formData.name,
-          phone: formData.phone,
-          email: formData.email || undefined,
-          items: items.map((item) => ({
-            productName: item.name,
-            options: item.options,
-            quantity: item.quantity,
-            totalPrice: item.price,
-          })),
-          totalPrice: total,
-        },
-      });
+      // Send email confirmation (only if email is provided)
+      if (formData.email) {
+        const { error: emailError } = await supabase.functions.invoke("send-order-email", {
+          body: {
+            customerName: formData.name,
+            customerEmail: formData.email,
+            phone: formData.phone,
+            items: items.map((item) => ({
+              productName: item.name,
+              options: item.options,
+              quantity: item.quantity,
+              totalPrice: item.price,
+            })),
+            totalPrice: total,
+          },
+        });
 
-      if (emailError) {
-        console.error("Error sending confirmation email:", emailError);
-        toast.error("Commande enregistrée mais l'email de confirmation n'a pas pu être envoyé");
-      } else {
-        toast.success(
-          `Commande enregistrée ! Vous serez informé sur ${formData.phone} par SMS avec la date pour récupérer la commande.`
-        );
+        if (emailError) {
+          console.error("Error sending confirmation email:", emailError);
+          toast.warning("Commande enregistrée mais l'email de confirmation n'a pas pu être envoyé");
+        }
       }
+
+      toast.success(
+        formData.email 
+          ? `Commande enregistrée ! Un email de confirmation a été envoyé à ${formData.email}. Vous serez aussi informé sur ${formData.phone} par SMS.`
+          : `Commande enregistrée ! Vous serez informé sur ${formData.phone} par SMS avec la date pour récupérer la commande.`
+      );
 
       setFormData({ name: "", phone: "", email: "" });
       onSuccess();
