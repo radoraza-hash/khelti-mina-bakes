@@ -85,17 +85,18 @@ export const CheckoutDialog = ({
       if (itemsError) throw itemsError;
 
       // Send email confirmation
-      const { error: emailError } = await supabase.functions.invoke("send-order-confirmation", {
+      const { error: emailError } = await supabase.functions.invoke("send-order-email", {
         body: {
-          customer_name: formData.name,
-          customer_email: formData.email || "non-fourni@email.com",
+          customerName: formData.name,
+          phone: formData.phone,
+          email: formData.email || undefined,
           items: items.map((item) => ({
             productName: item.name,
             options: item.options,
             quantity: item.quantity,
             totalPrice: item.price,
           })),
-          total_amount: total,
+          totalPrice: total,
         },
       });
 
