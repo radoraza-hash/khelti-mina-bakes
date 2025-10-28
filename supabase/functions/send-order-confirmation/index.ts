@@ -110,7 +110,7 @@ Cette commande a été créée automatiquement depuis le site web.
       body: JSON.stringify({
         personalizations: [
           {
-            to: [{ email: "chezkheltimina6k@yopmail.com" }],
+            to: [{ email: "Replyradzio1000001@yopmail.com" }],
             subject: `Nouvelle commande de ${customer_name}`,
           },
         ],
