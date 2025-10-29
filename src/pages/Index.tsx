@@ -107,7 +107,7 @@ const Index = () => {
               <Button variant="outline">À propos</Button>
             </Link>
             <Link to="/admin">
-              <Button variant="outline">Admin</Button>
+              <Button variant="outline">Accès Admin</Button>
             </Link>
           </div>
         </div>

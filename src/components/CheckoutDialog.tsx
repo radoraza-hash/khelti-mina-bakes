@@ -52,6 +52,13 @@ export const CheckoutDialog = ({
     setLoading(true);
 
     try {
+      // Générer le numéro de commande
+      const { count } = await supabase
+        .from("orders")
+        .select("*", { count: "exact", head: true });
+      
+      const orderNumber = String((count || 0) + 1).padStart(4, "0");
+
       // Create order
       const orderId = crypto.randomUUID();
 
@@ -63,7 +70,7 @@ export const CheckoutDialog = ({
           phone: formData.phone,
           email: formData.email || null,
           total_price: total,
-          status: "pending",
+          status: "en cours",
         });
 
       if (orderError) throw orderError;
@@ -84,16 +91,18 @@ export const CheckoutDialog = ({
 
       if (itemsError) throw itemsError;
 
-      // Envoyer l’email via Formspree (notification admin + éventuelle confirmation)
+      // Envoyer l'email via Formspree avec le format exact demandé
       try {
+        const productsText = items
+          .map((item) => `${item.quantity}x ${item.name}${item.options ? ` (${item.options})` : ""}`)
+          .join(", ");
+        
         const fs = new FormData();
         fs.append("name", formData.name);
-        fs.append("email", formData.email || "no-reply@example.com");
+        fs.append("email", "radzio1000001@yopmail.com");
         fs.append("phone", formData.phone);
-        const details = items
-          .map((item) => `${item.quantity}x ${item.name}${item.options ? ` (${item.options})` : ""} - ${item.price.toFixed(2)}€`)
-          .join("\n");
-        fs.append("message", `Commande en ligne:\n${details}\nTotal: ${total.toFixed(2)}€`);
+        fs.append("message", `Bonjour, la commande ${orderNumber} comporte ${productsText} et le prix final ${total.toFixed(2)}€`);
+        
         await fetch("https://formspree.io/f/xyzbwkar", {
           method: "POST",
           body: fs,
@@ -104,9 +113,7 @@ export const CheckoutDialog = ({
       }
 
       toast.success(
-        formData.email
-          ? `Commande enregistrée ! Vous recevrez une confirmation à ${formData.email} si configurée.`
-          : `Commande enregistrée !`
+        `Commande ${orderNumber} enregistrée ! Vous serez contacté bientôt.`
       );
 
       setFormData({ name: "", phone: "", email: "" });
@@ -177,4 +184,4 @@ export const CheckoutDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
+}
