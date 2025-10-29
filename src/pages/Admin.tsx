@@ -35,6 +35,9 @@ const Admin = () => {
   const [orderItems, setOrderItems] = useState<Record<string, OrderItem[]>>({});
   const [loading, setLoading] = useState(true);
   const [isSignup, setIsSignup] = useState(false);
+  const [isResetMode, setIsResetMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -45,10 +48,12 @@ const Admin = () => {
       }
     });
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
+      // Quand l'utilisateur revient du lien de réinitialisation
+      if (event === "PASSWORD_RECOVERY") {
+        setIsResetMode(true);
+      }
       if (session) {
         loadOrders();
       }
@@ -106,12 +111,49 @@ const Admin = () => {
     setLoading(false);
   };
 
+  const handleRequestPasswordReset = async () => {
+    if (!email) {
+      toast.error("Entrez votre email d'abord");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/admin`,
+    });
+    if (error) return toast.error(`Erreur: ${error.message}`);
+    toast.success("Email de réinitialisation envoyé. Vérifiez votre boîte mail.");
+  };
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPassword || newPassword !== confirmPassword) {
+      toast.error("Les mots de passe ne correspondent pas");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) return toast.error(`Erreur: ${error.message}`);
+    toast.success("Mot de passe mis à jour. Vous pouvez vous connecter.");
+    setIsResetMode(false);
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  const handleMagicLink = async () => {
+    if (!email) {
+      toast.error("Entrez votre email d'abord");
+      return;
+    }
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: { emailRedirectTo: `${window.location.origin}/admin` },
+    });
+    if (error) return toast.error(`Erreur: ${error.message}`);
+    toast.success("Lien magique envoyé par email.");
+  };
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSession(null);
     navigate("/");
   };
-
   const loadOrders = async () => {
     setLoading(true);
     try {
@@ -211,55 +253,94 @@ const Admin = () => {
         <Card className="w-full max-w-md bg-card border-border">
           <CardHeader>
             <CardTitle className="text-center">
-              {isSignup ? "Inscription Admin" : "Connexion Admin"}
+              {isResetMode
+                ? "Réinitialiser le mot de passe"
+                : isSignup
+                ? "Inscription Admin"
+                : "Connexion Admin"}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="rado.raza@gmail.com"
-                  className="bg-background"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Mot de passe</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mot de passe"
-                  className="bg-background"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? (isSignup ? "Inscription..." : "Connexion...") : (isSignup ? "S'inscrire" : "Se connecter")}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => setIsSignup(!isSignup)}
-              >
-                {isSignup ? "Déjà un compte ? Se connecter" : "Pas de compte ? S'inscrire"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => navigate("/")}
-              >
-                Retour à l'accueil
-              </Button>
-            </form>
+            {isResetMode ? (
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword">Nouveau mot de passe</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="bg-background"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="bg-background"
+                    required
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <Button type="submit" className="flex-1">Mettre à jour</Button>
+                  <Button type="button" variant="outline" className="flex-1" onClick={() => setIsResetMode(false)}>Annuler</Button>
+                </div>
+              </form>
+            ) : (
+              <form onSubmit={isSignup ? handleSignup : handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="rado.raza@gmail.com"
+                    className="bg-background"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Mot de passe</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Mot de passe"
+                    className="bg-background"
+                    required
+                  />
+                  <div className="flex gap-2 text-sm">
+                    <Button type="button" variant="link" onClick={handleRequestPasswordReset}>Mot de passe oublié ?</Button>
+                    <Button type="button" variant="link" onClick={handleMagicLink}>Recevoir un lien magique</Button>
+                  </div>
+                </div>
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? (isSignup ? "Inscription..." : "Connexion...") : (isSignup ? "S'inscrire" : "Se connecter")}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setIsSignup(!isSignup)}
+                >
+                  {isSignup ? "Déjà un compte ? Se connecter" : "Pas de compte ? S'inscrire"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => navigate("/")}
+                >
+                  Retour à l'accueil
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>
