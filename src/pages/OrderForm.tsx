@@ -23,17 +23,8 @@ export default function OrderForm() {
       headers: { Accept: "application/json" },
     });
 
-    const confirmPromise = supabase.functions.invoke("send-order-email", {
-      body: {
-        customerName: name,
-        customerEmail: email,
-        phone,
-        items: [],
-        totalPrice: 0,
-      },
-    });
 
-    await Promise.allSettled([formspreePromise, confirmPromise]);
+    await formspreePromise;
     navigate("/merci");
   };
 

@@ -84,33 +84,29 @@ export const CheckoutDialog = ({
 
       if (itemsError) throw itemsError;
 
-      // Send email confirmation (only if email is provided)
-      if (formData.email) {
-        const { error: emailError } = await supabase.functions.invoke("send-order-email", {
-          body: {
-            customerName: formData.name,
-            customerEmail: formData.email,
-            phone: formData.phone,
-            items: items.map((item) => ({
-              productName: item.name,
-              options: item.options,
-              quantity: item.quantity,
-              totalPrice: item.price,
-            })),
-            totalPrice: total,
-          },
+      // Envoyer l’email via Formspree (notification admin + éventuelle confirmation)
+      try {
+        const fs = new FormData();
+        fs.append("name", formData.name);
+        fs.append("email", formData.email || "no-reply@example.com");
+        fs.append("phone", formData.phone);
+        const details = items
+          .map((item) => `${item.quantity}x ${item.name}${item.options ? ` (${item.options})` : ""} - ${item.price.toFixed(2)}€`)
+          .join("\n");
+        fs.append("message", `Commande en ligne:\n${details}\nTotal: ${total.toFixed(2)}€`);
+        await fetch("https://formspree.io/f/xyzbwkar", {
+          method: "POST",
+          body: fs,
+          headers: { Accept: "application/json" },
         });
-
-        if (emailError) {
-          console.error("Error sending confirmation email:", emailError);
-          toast.warning("Commande enregistrée mais l'email de confirmation n'a pas pu être envoyé");
-        }
+      } catch (err) {
+        console.error("Formspree send failed", err);
       }
 
       toast.success(
-        formData.email 
-          ? `Commande enregistrée ! Un email de confirmation a été envoyé à ${formData.email}. Vous serez aussi informé sur ${formData.phone} par SMS.`
-          : `Commande enregistrée ! Vous serez informé sur ${formData.phone} par SMS avec la date pour récupérer la commande.`
+        formData.email
+          ? `Commande enregistrée ! Vous recevrez une confirmation à ${formData.email} si configurée.`
+          : `Commande enregistrée !`
       );
 
       setFormData({ name: "", phone: "", email: "" });
