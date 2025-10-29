@@ -240,6 +240,75 @@ const Admin = () => {
     }
   };
 
+  const deleteOrder = async (orderId: string) => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer cette commande ?")) return;
+    
+    try {
+      // Supprimer d'abord les items de commande
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .delete()
+        .eq("order_id", orderId);
+
+      if (itemsError) throw itemsError;
+
+      // Puis supprimer la commande
+      const { error } = await supabase
+        .from("orders")
+        .delete()
+        .eq("id", orderId);
+
+      if (error) throw error;
+
+      setOrders(orders.filter((order) => order.id !== orderId));
+      toast.success("Commande supprimée !");
+    } catch (error: any) {
+      console.error("Error deleting order:", error);
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
+  const deleteAllValidatedOrders = async () => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer TOUTES les commandes validées ?")) return;
+    
+    setLoading(true);
+    try {
+      const validatedOrderIds = orders
+        .filter((o) => o.status === "validé")
+        .map((o) => o.id);
+
+      if (validatedOrderIds.length === 0) {
+        toast.info("Aucune commande validée à supprimer");
+        setLoading(false);
+        return;
+      }
+
+      // Supprimer tous les items de commandes validées
+      const { error: itemsError } = await supabase
+        .from("order_items")
+        .delete()
+        .in("order_id", validatedOrderIds);
+
+      if (itemsError) throw itemsError;
+
+      // Puis supprimer toutes les commandes validées
+      const { error } = await supabase
+        .from("orders")
+        .delete()
+        .eq("status", "validé");
+
+      if (error) throw error;
+
+      setOrders(orders.filter((order) => order.status !== "validé"));
+      toast.success(`${validatedOrderIds.length} commande(s) validée(s) supprimée(s) !`);
+    } catch (error: any) {
+      console.error("Error deleting validated orders:", error);
+      toast.error("Erreur lors de la suppression");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading && !session) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -438,6 +507,13 @@ const Admin = () => {
                 Valider
               </Button>
             )}
+            <Button
+              onClick={() => deleteOrder(order.id)}
+              variant="destructive"
+              size="sm"
+            >
+              Supprimer
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -454,6 +530,9 @@ const Admin = () => {
           <div className="flex gap-4">
             <Button variant="outline" onClick={loadOrders} disabled={loading}>
               {loading ? "Chargement..." : "Actualiser"}
+            </Button>
+            <Button variant="destructive" onClick={deleteAllValidatedOrders} disabled={loading}>
+              Supprimer toutes les validées
             </Button>
             <Button variant="outline" onClick={() => navigate("/")}>
               Revenir en utilisateur
