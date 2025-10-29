@@ -2,8 +2,41 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export default function OrderForm() {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const name = String(formData.get("name") || "");
+    const email = String(formData.get("email") || "");
+    const phone = String(formData.get("phone") || "");
+    const message = String(formData.get("message") || "");
+
+    const formspreePromise = fetch("https://formspree.io/f/xyzbwkar", {
+      method: "POST",
+      body: formData,
+      headers: { Accept: "application/json" },
+    });
+
+    const confirmPromise = supabase.functions.invoke("send-order-email", {
+      body: {
+        customerName: name,
+        customerEmail: email,
+        phone,
+        items: [],
+        totalPrice: 0,
+      },
+    });
+
+    await Promise.allSettled([formspreePromise, confirmPromise]);
+    navigate("/merci");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto px-4 py-12">
@@ -18,14 +51,11 @@ export default function OrderForm() {
           <form
             action="https://formspree.io/f/xyzbwkar"
             method="POST"
+            onSubmit={handleSubmit}
             className="bg-card border border-border rounded-lg p-8 shadow-lg space-y-6"
           >
             {/* Redirect to thank you page */}
-            <input
-              type="hidden"
-              name="_next"
-              value={`${window.location.origin}/merci`}
-            />
+            <input type="hidden" name="_next" value={`${window.location.origin}/merci`} />
             {/* Custom subject */}
             <input type="hidden" name="_subject" value="Nouvelle commande - Chez Khelti Mina" />
 

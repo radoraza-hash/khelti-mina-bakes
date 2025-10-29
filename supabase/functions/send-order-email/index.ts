@@ -138,9 +138,9 @@ const handler = async (req: Request): Promise<Response> => {
       },
       body: JSON.stringify({
         from: "Chez Khelti Mina <onboarding@resend.dev>",
-        to: ["Replyradzio1000001@yopmail.com"],
-        subject: `Nouvelle commande de ${customerName}`,
-        html: adminEmailHtml,
+          to: ["radzio1000001@yopmail.com"],
+          subject: `Nouvelle commande de ${customerName}`,
+          html: adminEmailHtml,
       }),
     }).then(async (adminEmailResponse) => {
       if (!adminEmailResponse.ok) {
