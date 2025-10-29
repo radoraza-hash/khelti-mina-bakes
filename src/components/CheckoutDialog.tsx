@@ -70,7 +70,7 @@ export const CheckoutDialog = ({
           phone: formData.phone,
           email: formData.email || null,
           total_price: total,
-          status: "pending",
+          status: "en attente",
         });
 
       if (orderError) throw orderError;

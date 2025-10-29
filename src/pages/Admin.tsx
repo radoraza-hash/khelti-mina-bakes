@@ -266,9 +266,9 @@ const Admin = () => {
     );
   }
 
-  const pendingOrders = orders.filter((o) => o.status === "pending");
-  const inProgressOrders = orders.filter((o) => o.status === "in_progress");
-  const completedOrders = orders.filter((o) => o.status === "completed");
+  const pendingOrders = orders.filter((o) => o.status === "en attente");
+  const inProgressOrders = orders.filter((o) => o.status === "en préparation");
+  const completedOrders = orders.filter((o) => o.status === "validé");
 
   const OrderCard = ({ order }: { order: Order }) => {
     const items = orderItems[order.id] || [];
@@ -319,18 +319,18 @@ const Admin = () => {
           </div>
 
           <div className="flex gap-2">
-            {order.status === "pending" && (
+            {order.status === "en attente" && (
               <Button
-                onClick={() => updateOrderStatus(order.id, "in_progress")}
+                onClick={() => updateOrderStatus(order.id, "en préparation")}
                 variant="outline"
                 className="flex-1"
               >
                 Commencer à préparer
               </Button>
             )}
-            {order.status === "in_progress" && (
+            {order.status === "en préparation" && (
               <Button
-                onClick={() => updateOrderStatus(order.id, "completed")}
+                onClick={() => updateOrderStatus(order.id, "validé")}
                 className="flex-1"
               >
                 Valider
