@@ -81,8 +81,11 @@ const Admin = () => {
       setSession(data.session);
       toast.success("Connexion réussie !");
       await loadOrders();
+      return;
     }
-    setLoading(false);
+
+    // Si échec de connexion, proposer de créer/mettre à jour le compte automatiquement
+    toast.error("Identifiants invalides. Vous pouvez activer l'accès admin automatiquement.");
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -315,9 +318,27 @@ const Admin = () => {
                     className="bg-background"
                     required
                   />
-                  <div className="flex gap-2 text-sm">
+                  <div className="flex gap-2 text-sm flex-wrap">
                     <Button type="button" variant="link" onClick={handleRequestPasswordReset}>Mot de passe oublié ?</Button>
                     <Button type="button" variant="link" onClick={handleMagicLink}>Recevoir un lien magique</Button>
+                    <Button type="button" variant="outline" onClick={async () => {
+                      try {
+                        const { error } = await supabase.functions.invoke("create-admin", {
+                          body: { email, password },
+                        });
+                        if (error) throw error;
+                        toast.success("Compte admin créé/mis à jour. Connexion...");
+                        const { data, error: loginErr } = await supabase.auth.signInWithPassword({ email, password });
+                        if (loginErr) throw loginErr;
+                        if (data.session) {
+                          setSession(data.session);
+                          await loadOrders();
+                        }
+                      } catch (e: any) {
+                        console.error(e);
+                        toast.error(e?.message || "Échec de l'activation admin");
+                      }
+                    }}>Activer l'accès admin automatiquement</Button>
                   </div>
                 </div>
                 <Button type="submit" className="w-full" disabled={loading}>
