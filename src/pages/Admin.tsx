@@ -115,6 +115,35 @@ const Admin = () => {
   const loadOrders = async () => {
     setLoading(true);
     try {
+      // First, ensure current user has admin role
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Check if user already has admin role
+        const { data: existingRole } = await supabase
+          .from("user_roles")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("role", "admin")
+          .single();
+
+        // If no admin role exists, create one
+        if (!existingRole) {
+          const { error: roleError } = await supabase
+            .from("user_roles")
+            .insert({ user_id: user.id, role: "admin" });
+          
+          if (roleError) {
+            console.error("Error creating admin role:", roleError);
+            toast.error("Erreur: Vous devez avoir le rôle admin pour accéder à cette page");
+            await supabase.auth.signOut();
+            setSession(null);
+            setLoading(false);
+            return;
+          }
+          toast.success("Rôle admin créé avec succès !");
+        }
+      }
+
       const { data: ordersData, error: ordersError } = await supabase
         .from("orders")
         .select("*")
@@ -296,7 +325,7 @@ const Admin = () => {
                 variant="outline"
                 className="flex-1"
               >
-                En cours
+                Commencer à préparer
               </Button>
             )}
             {order.status === "in_progress" && (
@@ -304,7 +333,7 @@ const Admin = () => {
                 onClick={() => updateOrderStatus(order.id, "completed")}
                 className="flex-1"
               >
-                Validée
+                Valider
               </Button>
             )}
           </div>

@@ -16,7 +16,7 @@ export default function OrderForm() {
           </div>
 
           <form
-            action="https://formsubmit.co/radzio1000001@yopmail.com"
+            action="https://formspree.io/f/xyzbwkar"
             method="POST"
             className="bg-card border border-border rounded-lg p-8 shadow-lg space-y-6"
           >
@@ -26,10 +26,6 @@ export default function OrderForm() {
               name="_next"
               value={`${window.location.origin}/merci`}
             />
-            {/* Disable captcha */}
-            <input type="hidden" name="_captcha" value="false" />
-            {/* Enable auto response */}
-            <input type="hidden" name="_autoresponse" value="Merci pour votre commande ! Nous vous contacterons bientôt." />
             {/* Custom subject */}
             <input type="hidden" name="_subject" value="Nouvelle commande - Chez Khelti Mina" />
 
