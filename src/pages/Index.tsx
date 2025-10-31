@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
-import heroImage from "@/assets/hero-bakery.jpg";
+import heroImage from "@/assets/hero-storefront.jpg";
 import batboutImage from "@/assets/batbout-real.jpg";
 import melouiImage from "@/assets/meloui-real.jpg";
 import baghririImage from "@/assets/baghrir-real.jpg";
