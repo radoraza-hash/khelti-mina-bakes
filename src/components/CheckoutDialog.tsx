@@ -11,6 +11,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const checkoutSchema = z.object({
+  name: z.string().trim().min(2, "Le nom doit contenir au moins 2 caractères").max(100, "Le nom est trop long"),
+  phone: z.string().trim().regex(/^[0-9\s\+\-\(\)]{8,20}$/, "Numéro de téléphone invalide"),
+  email: z.string().trim().email("Email invalide").max(255).optional().or(z.literal("")),
+});
 
 interface CartItem {
   name: string;
@@ -44,8 +51,11 @@ export const CheckoutDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.name || !formData.phone) {
-      toast.error("Veuillez remplir tous les champs obligatoires");
+    // Validate input
+    const validation = checkoutSchema.safeParse(formData);
+    if (!validation.success) {
+      const firstError = validation.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
 
@@ -120,8 +130,7 @@ export const CheckoutDialog = ({
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Error creating order:", error);
-      toast.error("Erreur lors de la création de la commande");
+      toast.error("Une erreur est survenue. Veuillez réessayer.");
     } finally {
       setLoading(false);
     }
