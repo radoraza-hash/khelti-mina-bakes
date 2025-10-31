@@ -1,9 +1,25 @@
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
+
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Input validation schema
+const orderEmailSchema = z.object({
+  customerName: z.string().trim().min(1).max(100),
+  customerEmail: z.string().trim().email().max(255),
+  phone: z.string().trim().min(8).max(20).regex(/^[\d\s\+\-\(\)]+$/),
+  items: z.array(z.object({
+    productName: z.string().trim().min(1).max(200),
+    options: z.string().max(500).optional(),
+    quantity: z.number().int().positive().max(1000),
+    totalPrice: z.number().positive().max(100000),
+  })).min(1).max(100),
+  totalPrice: z.number().positive().max(100000),
+});
 
 interface OrderEmailRequest {
   customerName: string;
@@ -24,7 +40,22 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    const { customerName, customerEmail, phone, items, totalPrice }: OrderEmailRequest = await req.json();
+    const requestData = await req.json();
+    
+    // Validate input
+    const validationResult = orderEmailSchema.safeParse(requestData);
+    if (!validationResult.success) {
+      console.error("Input validation failed:", validationResult.error.issues);
+      return new Response(
+        JSON.stringify({ error: "Invalid request data" }), 
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { customerName, customerEmail, phone, items, totalPrice } = validationResult.data;
 
     console.log("Sending order confirmation to:", customerEmail);
 
@@ -158,10 +189,13 @@ const handler = async (req: Request): Promise<Response> => {
     });
   } catch (error: any) {
     console.error("❌ Error sending email:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({ error: "Failed to process email request" }), 
+      {
+        status: 500,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   }
 };
 
