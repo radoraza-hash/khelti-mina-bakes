@@ -13,7 +13,7 @@ export default function ThankYou() {
             </div>
             <h1 className="text-3xl font-bold mb-2">Merci !</h1>
             <p className="text-muted-foreground">
-              Votre commande a été envoyée avec succès
+              Votre commande a été validée
             </p>
           </div>
 
