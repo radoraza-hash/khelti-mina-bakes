@@ -13,6 +13,7 @@ import { toast } from "sonner";
 interface ProductOption {
   label: string;
   value: string;
+  price?: number;
 }
 
 interface ProductCardProps {
@@ -41,6 +42,16 @@ export const ProductCard = ({
   const [selectedSecondaryOption, setSelectedSecondaryOption] = useState("");
   const [quantity, setQuantity] = useState(1);
 
+  const getSelectedPrice = () => {
+    if (options) {
+      const selected = options.find(opt => opt.value === selectedOption);
+      return selected?.price || price;
+    }
+    return price;
+  };
+
+  const currentPrice = getSelectedPrice();
+
   const handleAddToCart = () => {
     if (options && !selectedOption) {
       toast.error("Veuillez sélectionner une option");
@@ -59,7 +70,7 @@ export const ProductCard = ({
       name,
       options: optionsText,
       quantity,
-      price: price * quantity,
+      price: currentPrice * quantity,
     });
 
     toast.success("Produit ajouté au panier !");
@@ -79,7 +90,7 @@ export const ProductCard = ({
       </div>
       <CardContent className="p-4 space-y-3">
         <h3 className="text-lg font-semibold text-foreground">{name}</h3>
-        <p className="text-2xl font-bold text-primary">{price}€</p>
+        <p className="text-2xl font-bold text-primary">{currentPrice.toFixed(2)}€</p>
 
         {options && (
           <Select value={selectedOption} onValueChange={setSelectedOption}>

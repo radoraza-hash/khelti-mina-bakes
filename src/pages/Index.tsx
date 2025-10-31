@@ -32,23 +32,21 @@ const Index = () => {
 
   const products = [
     {
-      name: "Meloui petit (11cm)",
-      image: melouiPetitImage,
+      name: "Meloui",
+      image: melouiNormalImage,
+      options: [
+        { label: "Petit (11cm) - 1,00€", value: "Petit (11cm)", price: 1.00 },
+        { label: "Format normal - 2,00€", value: "Format normal", price: 2.00 },
+      ],
       price: 1.00,
     },
     {
-      name: "Meloui format normal",
-      image: melouiNormalImage,
-      price: 2.00,
-    },
-    {
-      name: "Baghrir format normal",
+      name: "Baghrir",
       image: baghririImage,
-      price: 0.80,
-    },
-    {
-      name: "Baghrir mini format",
-      image: baghririMiniImage,
+      options: [
+        { label: "Mini format - 0,70€", value: "Mini format", price: 0.70 },
+        { label: "Format normal - 0,80€", value: "Format normal", price: 0.80 },
+      ],
       price: 0.70,
     },
     {
@@ -57,23 +55,21 @@ const Index = () => {
       price: 0.70,
     },
     {
-      name: "Msemen format normal",
+      name: "Msemen",
       image: msemenImage,
-      price: 1.30,
-    },
-    {
-      name: "Msemen petit format",
-      image: msemenPetitImage,
+      options: [
+        { label: "Petit format - 0,80€", value: "Petit format", price: 0.80 },
+        { label: "Format normal - 1,30€", value: "Format normal", price: 1.30 },
+      ],
       price: 0.80,
     },
     {
       name: "Msemen farci",
       image: msemenFarciImage,
-      price: 2.60,
-    },
-    {
-      name: "Mini msemen farci",
-      image: miniMsemenFarciImage,
+      options: [
+        { label: "Mini - 1,60€", value: "Mini", price: 1.60 },
+        { label: "Normal - 2,60€", value: "Normal", price: 2.60 },
+      ],
       price: 1.60,
     },
     {
@@ -81,6 +77,9 @@ const Index = () => {
       image: batboutImage,
       price: 0.80,
     },
+  ];
+
+  const produitsGris = [
     {
       name: "Khobz gris",
       image: khobzGrisImage,
@@ -143,17 +142,36 @@ const Index = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Products Grid */}
-          <div className="lg:col-span-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {products.map((product) => (
-                <ProductCard
-                  key={product.name}
-                  name={product.name}
-                  image={product.image}
-                  price={product.price}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
+          <div className="lg:col-span-2 space-y-8">
+            <div>
+              <h3 className="text-2xl font-bold text-foreground mb-4">Nos Produits</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product.name}
+                    name={product.name}
+                    image={product.image}
+                    options={product.options}
+                    price={product.price}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-2xl font-bold text-foreground mb-4">Produits Gris</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {produitsGris.map((product) => (
+                  <ProductCard
+                    key={product.name}
+                    name={product.name}
+                    image={product.image}
+                    price={product.price}
+                    onAddToCart={handleAddToCart}
+                  />
+                ))}
+              </div>
             </div>
           </div>
 
