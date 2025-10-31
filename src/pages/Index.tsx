@@ -7,17 +7,12 @@ import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import heroImage from "@/assets/hero-bakery.jpg";
-import msemenImage from "@/assets/msemen.jpg";
-import batboutImage from "@/assets/batbout.jpg";
-import baghririImage from "@/assets/baghrir.jpg";
-import melouiPetitImage from "@/assets/meloui-petit.jpg";
-import melouiNormalImage from "@/assets/meloui-normal.jpg";
-import baghririMiniImage from "@/assets/baghrir-mini.jpg";
-import msemenFarciImage from "@/assets/msemen-farci.jpg";
-import miniMsemenFarciImage from "@/assets/mini-msemen-farci.jpg";
-import msemenPetitImage from "@/assets/msemen-petit.jpg";
-import khobzGrisImage from "@/assets/khobz-gris.jpg";
-import msamenGrisImage from "@/assets/msamen-gris.jpg";
+import batboutImage from "@/assets/batbout-real.jpg";
+import melouiImage from "@/assets/meloui-real.jpg";
+import baghririImage from "@/assets/baghrir-real.jpg";
+import msemenImage from "@/assets/msemen-real.jpg";
+import msemenFarciImage from "@/assets/msemen-farci-real.jpg";
+import khobzGrisImage from "@/assets/khobz-gris-real.jpg";
 
 interface CartItem {
   name: string;
@@ -33,7 +28,7 @@ const Index = () => {
   const products = [
     {
       name: "Meloui",
-      image: melouiNormalImage,
+      image: melouiImage,
       options: [
         { label: "Petit (11cm) - 1,00€", value: "Petit (11cm)", price: 1.00 },
         { label: "Format normal - 2,00€", value: "Format normal", price: 2.00 },
@@ -91,7 +86,7 @@ const Index = () => {
     },
     {
       name: "Msamen gris",
-      image: msamenGrisImage,
+      image: msemenImage,
       price: 1.50,
     },
   ];
