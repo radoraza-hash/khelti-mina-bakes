@@ -119,7 +119,8 @@ export const CheckoutDialog = ({
           headers: { Accept: "application/json" },
         });
       } catch (err) {
-        console.error("Formspree send failed", err);
+        // Log generic error without exposing details
+        console.error("Email notification failed");
       }
 
       toast.success(

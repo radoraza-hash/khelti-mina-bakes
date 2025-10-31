@@ -178,7 +178,7 @@ const Admin = () => {
             .insert({ user_id: user.id, role: "admin" });
           
           if (roleError) {
-            console.error("Error creating admin role:", roleError);
+            console.error("Failed to create admin role");
             toast.error("Erreur: Vous devez avoir le rôle admin pour accéder à cette page");
             await supabase.auth.signOut();
             setSession(null);
@@ -212,7 +212,7 @@ const Admin = () => {
       }
       setOrderItems(itemsMap);
     } catch (error: any) {
-      console.error("Error loading orders:", error);
+      console.error("Failed to load orders");
       toast.error("Erreur lors du chargement des commandes");
     } finally {
       setLoading(false);
@@ -235,7 +235,7 @@ const Admin = () => {
       );
       toast.success("Statut mis à jour !");
     } catch (error: any) {
-      console.error("Error updating order:", error);
+      console.error("Failed to update order status");
       toast.error("Erreur lors de la mise à jour");
     }
   };
@@ -263,7 +263,7 @@ const Admin = () => {
       setOrders(orders.filter((order) => order.id !== orderId));
       toast.success("Commande supprimée !");
     } catch (error: any) {
-      console.error("Error deleting order:", error);
+      console.error("Failed to delete order");
       toast.error("Erreur lors de la suppression");
     }
   };
@@ -302,7 +302,7 @@ const Admin = () => {
       setOrders(orders.filter((order) => order.status !== "validé"));
       toast.success(`${validatedOrderIds.length} commande(s) validée(s) supprimée(s) !`);
     } catch (error: any) {
-      console.error("Error deleting validated orders:", error);
+      console.error("Failed to delete validated orders");
       toast.error("Erreur lors de la suppression");
     } finally {
       setLoading(false);
@@ -404,8 +404,8 @@ const Admin = () => {
                           await loadOrders();
                         }
                       } catch (e: any) {
-                        console.error(e);
-                        toast.error(e?.message || "Échec de l'activation admin");
+                        console.error("Failed to activate admin access");
+                        toast.error("Échec de l'activation admin");
                       }
                     }}>Activer l'accès admin automatiquement</Button>
                   </div>
