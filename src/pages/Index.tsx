@@ -126,9 +126,14 @@ const Index = () => {
       <nav className="sticky top-0 z-10 bg-card border-b border-border shadow-md">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h2 className="text-xl font-semibold text-foreground">Nos Produits</h2>
-          <Link to="/about">
-            <Button variant="outline">À propos</Button>
-          </Link>
+          <div className="flex gap-4">
+            <Link to="/about">
+              <Button variant="outline">À propos</Button>
+            </Link>
+            <Link to="/contact">
+              <Button variant="outline">Contact</Button>
+            </Link>
+          </div>
         </div>
       </nav>
 
