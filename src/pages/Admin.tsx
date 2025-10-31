@@ -160,33 +160,31 @@ const Admin = () => {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      // First, ensure current user has admin role
+      // Check if current user has admin role
       const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        // Check if user already has admin role
-        const { data: existingRole } = await supabase
-          .from("user_roles")
-          .select("*")
-          .eq("user_id", user.id)
-          .eq("role", "admin")
-          .single();
+      if (!user) {
+        toast.error("Utilisateur non authentifié");
+        await supabase.auth.signOut();
+        setSession(null);
+        setLoading(false);
+        return;
+      }
 
-        // If no admin role exists, create one
-        if (!existingRole) {
-          const { error: roleError } = await supabase
-            .from("user_roles")
-            .insert({ user_id: user.id, role: "admin" });
-          
-          if (roleError) {
-            console.error("Failed to create admin role");
-            toast.error("Erreur: Vous devez avoir le rôle admin pour accéder à cette page");
-            await supabase.auth.signOut();
-            setSession(null);
-            setLoading(false);
-            return;
-          }
-          toast.success("Rôle admin créé avec succès !");
-        }
+      // Verify user has admin role - block access if not
+      const { data: existingRole, error: roleCheckError } = await supabase
+        .from("user_roles")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("role", "admin")
+        .single();
+
+      if (roleCheckError || !existingRole) {
+        console.error("Unauthorized access attempt");
+        toast.error("Erreur: Vous devez avoir le rôle admin pour accéder à cette page");
+        await supabase.auth.signOut();
+        setSession(null);
+        setLoading(false);
+        return;
       }
 
       const { data: ordersData, error: ordersError } = await supabase
