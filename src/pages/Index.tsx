@@ -8,9 +8,16 @@ import { Link } from "react-router-dom";
 
 import heroImage from "@/assets/hero-bakery.jpg";
 import msemenImage from "@/assets/msemen.jpg";
-import painImage from "@/assets/pain-maison.jpg";
 import batboutImage from "@/assets/batbout.jpg";
 import baghririImage from "@/assets/baghrir.jpg";
+import melouiPetitImage from "@/assets/meloui-petit.jpg";
+import melouiNormalImage from "@/assets/meloui-normal.jpg";
+import baghririMiniImage from "@/assets/baghrir-mini.jpg";
+import msemenFarciImage from "@/assets/msemen-farci.jpg";
+import miniMsemenFarciImage from "@/assets/mini-msemen-farci.jpg";
+import msemenPetitImage from "@/assets/msemen-petit.jpg";
+import khobzGrisImage from "@/assets/khobz-gris.jpg";
+import msamenGrisImage from "@/assets/msamen-gris.jpg";
 
 interface CartItem {
   name: string;
@@ -25,45 +32,64 @@ const Index = () => {
 
   const products = [
     {
-      name: "Msemen",
-      image: msemenImage,
-      options: [
-        { label: "Gris", value: "Gris" },
-        { label: "Blanc", value: "Blanc" },
-      ],
-      price: 1,
+      name: "Meloui petit (11cm)",
+      image: melouiPetitImage,
+      price: 1.00,
     },
     {
-      name: "Pain maison",
-      image: painImage,
-      options: [
-        { label: "Mini", value: "Mini" },
-        { label: "Grand", value: "Grand" },
-      ],
-      secondaryOptions: [
-        { label: "Gris", value: "Gris" },
-        { label: "Blanc", value: "Blanc" },
-        { label: "Dial ch'ir", value: "Dial ch'ir" },
-      ],
-      price: 1,
+      name: "Meloui format normal",
+      image: melouiNormalImage,
+      price: 2.00,
     },
     {
-      name: "Batbout",
-      image: batboutImage,
-      options: [
-        { label: "Grand", value: "Grand" },
-        { label: "Mini", value: "Mini" },
-      ],
-      price: 1,
-    },
-    {
-      name: "Baghrir",
+      name: "Baghrir format normal",
       image: baghririImage,
-      options: [
-        { label: "Grand", value: "Grand" },
-        { label: "Mini", value: "Mini" },
-      ],
-      price: 1,
+      price: 0.80,
+    },
+    {
+      name: "Baghrir mini format",
+      image: baghririMiniImage,
+      price: 0.70,
+    },
+    {
+      name: "Batbout mini",
+      image: batboutImage,
+      price: 0.70,
+    },
+    {
+      name: "Msemen format normal",
+      image: msemenImage,
+      price: 1.30,
+    },
+    {
+      name: "Msemen petit format",
+      image: msemenPetitImage,
+      price: 0.80,
+    },
+    {
+      name: "Msemen farci",
+      image: msemenFarciImage,
+      price: 2.60,
+    },
+    {
+      name: "Mini msemen farci",
+      image: miniMsemenFarciImage,
+      price: 1.60,
+    },
+    {
+      name: "Krichlat",
+      image: batboutImage,
+      price: 0.80,
+    },
+    {
+      name: "Khobz gris",
+      image: khobzGrisImage,
+      price: 1.10,
+    },
+    {
+      name: "Msamen gris",
+      image: msamenGrisImage,
+      price: 1.50,
     },
   ];
 
@@ -124,8 +150,6 @@ const Index = () => {
                   key={product.name}
                   name={product.name}
                   image={product.image}
-                  options={product.options}
-                  secondaryOptions={product.secondaryOptions}
                   price={product.price}
                   onAddToCart={handleAddToCart}
                 />
