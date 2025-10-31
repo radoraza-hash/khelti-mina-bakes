@@ -50,8 +50,12 @@ const Index = () => {
       price: 0.70,
     },
     {
-      name: "Batbout mini",
+      name: "Batbout",
       image: batboutImage,
+      options: [
+        { label: "Mini - 0,70€", value: "Mini", price: 0.70 },
+        { label: "Normal - 0,80€", value: "Normal", price: 0.80 },
+      ],
       price: 0.70,
     },
     {
